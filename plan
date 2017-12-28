@@ -1,0 +1,32 @@
+Every song, album, and artist needs to be identified via api, easiest way is a id of some sort
+
+possible ids: 
+- Hash (artist name/album title/song title or file)
+- uuid (Everything is assigned a uuid upon being added)
+
+best id:
+- Everything gets it's own uuid upon being added
+- Songs, albums, and artists are checked for duplicates in the library based on their name/title, if found assumed to be the same
+- Allowed to change the links between songs/albums/artists
+
+----------
+
+Artists:
+- Only one artist with any given name, all songs/albums with the same artist name will be attributed to that single artist
+- Songs and albums attributed to the same artist get combined under that one artist
+
+Albums:
+- Unlimited albums with the same name, unique album names per artist
+- Albums with the same name and artist get combined
+
+Songs:
+- Unlimited songs with the same name, unique song names per artist
+- Songs with the same name and artist will be a special menu (Assumed the same song, all files kept for manual change)
+
+----------
+
+Search:
+- Can search generally for any song/album/artist that fits the terms given
+- Can search specifically for a song, album, or artist that fits the terms given
+- Can search for the specific name of a song, album, or artist and return only the exact match
+  - Allows for adding in new songs/albums/artists or combining them togeather

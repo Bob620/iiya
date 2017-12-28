@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/Bob620/iiya/issues"
   },
-  "homepage": "https://github.com/Bob620/iiya#readme"
+  "homepage": "https://github.com/Bob620/iiya#readme",
+  "dependencies": {
+    "express": "^4.16.2"
+  }
 }

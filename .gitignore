@@ -57,3 +57,8 @@ typings/
 # dotenv environment variables file
 .env
 
+# Custom music directory
+music/
+
+# Runtime settings
+#settings.json
