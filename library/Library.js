@@ -1,6 +1,10 @@
+const fs = require('fs');
+
+const promptSync = require('prompt-sync')();
+
 const Song = require('./Song.js');
-const Album = require('./Album.js');
-const Artist = require('./Artist.js');
+      Album = require('./Album.js');
+      Artist = require('./Artist.js');
 
 class Library {
   constructor() {
@@ -15,7 +19,41 @@ class Library {
    * @param {string} path 
    */
   addDirectory(path) {
+    const files = fs.readdirSync(path);
+    files.forEach((fileName) => {
+      if (!fileName.endsWith('.mp3')) {
+        const stats = fs.statSync(`${path}/${fileName}`);
+        if (stats.isDirectory()) {
+          const albumName = fileName;
+          const albumFiles = fs.readdirSync(`${path}/${albumName}`);
+          albumFiles.forEach((fileName) => {
+            if (fileName.endsWith('.mp3')) {
+              const suggestedName = fileName.substr(0, fileName.length-4).split(' - ');
+              const actualName = promptSync(`Please enter song name(${suggestedName[1]}): `);
+              let song = new Song(`${path}/${albumName}/${fileName}`, actualName !== '' ? actualName : suggestedName[1]);
 
+              const artistName = promptSync(`Please enter artist name(${suggestedName[0]}): `);
+              
+              const actualAlbumName = promptSync(`Please enter album name(${albumName}): `);
+              let album = new Album(actualAlbumName !== '' ? actualAlbumName : albumName);
+
+              let artist = this.addArtist(new Artist(artistName !== '' ? artistName : suggestedName[0]));
+
+              album.addArtist(artist);
+              album = this.addAlbum(album);
+
+              song.addArtist(artist);
+              song.addAlbum(album);
+
+              this.addSong(song);
+            }
+          });
+        }
+      } else {
+
+      }
+    });
+    console.log(this.albums);
   }
 
   /**
@@ -24,33 +62,70 @@ class Library {
    * @param {Array.<string>} paths 
    */
   addDirectories(paths) {
-    for (const path in paths) {
+    paths.forEach((path) => {
       this.addDirectory(path);
-    }
+    });
   }
 
   /**
    * Adds the given song to the library
    * 
    * @param {Song} song 
+   * @returns {Song} The song in the library
    */
   addSong(song) {
-    this.searchExactSong(song.normalizedName)
-    .then((matchedSong) => {
-      // Found a match
-      matchedSong.addMatch(song);
-    }).catch(() => {
-      // New Song
-      this.songs.set(song.uuid, song);
-    });
+    const existingSong = this.searchExactSongSync(song);
+    if (existingSong) {
+      const masterSong = existingSong.penultimateMaster;
+      // The song exists, we can then assume they are the same song and layer them
+      masterSong.addMatch(searchSong);
+      searchSong.master = masterSong;
+      return masterSong;
+    }
+    // New song for the artists
+    this.songs.set(song.uuid, song);
+    song.enforce();
+    return song;
   }
 
+  /**
+   * Adds the given album to the library
+   * 
+   * @param {Album} album 
+   * @returns {Album} The album in the library
+   */
   addAlbum(album) {
-
+    const existingAlbum = this.searchExactAlbumSync(album);
+    if (existingAlbum) {
+      // Album exists, merge
+      existingAlbum.merge(album);
+      existingAlbum.enforce();
+      return existingAlbum;
+    }
+    // New album
+    this.albums.set(album.uuid, album);
+    album.enforce();
+    return album;
   }
 
+  /**
+   * Adds the given artist to the library
+   * 
+   * @param {Artist} artist 
+   * @returns {Artist} The artist in the library
+   */
   addArtist(artist) {
-
+    const existingArtist = this.searchExactArtistSync(artist.normalizedName);
+    if (existingArtist) {
+      // Artist exists, merge
+      existingArtist.merge(artist);
+      existingArtist.enforce();
+      return existingArtist;
+    }
+    // New artist
+    this.artists.set(artist.uuid, artist);
+    artist.enforce();
+    return artist;
   }
 
   /**
@@ -152,61 +227,45 @@ class Library {
    * Search all Songs for the exact name
    * 
    * @param {Song} searchSong A string to match
-   * @returns {Promise.<Song>} The Song that match the search
+   * @returns {Promise.<Song>} The Song that matches the search
    */
   searchExactSong(searchSong) {
-    return new Promise(() => {
+    return new Promise((resolve, reject) => {
       const searchName = searchSong.normalizedName;
       // Search for the artist
       searchSong.artist.forEach((artist) => {
-        this.searchExactArtist(artist.normalizedName)
-        .then((artist) => {
-          // Artist Exists, could have the song already
-          // Search songs by the artist
-          artist.searchExactSong(searchName)
-          .then((song) => {
-            // The song exists, we can then assume they are the same song and layer them
-            song.addMatch(searchSong);
-            searchSong.master = song;
-          }).catch(() => {
-            // New song for the artist
-          });
-        }).catch(() => {
-          // New Artist, don't need to worry about the song already existing
-
-        });
-
-
-
-
-      });
-
-
-
-      for (let [uuid, song] of this.songs) {
-        if (song.normalizedName === searchName) {
-          resolve(song);
+        artist.searchExactSong(searchName)
+        .then((song) => {
+          // We found a song that matches, but we need the master of the chain
+          resolve(song.penultimateMaster);
           return;
-        }
-      }
-      reject();
+        }).catch(() => {
+          // New song for the artist
+          reject();
+          return;
+        });
+      });
     });
   }
 
   /**
    * Search all Albums for the exact name
    * 
-   * @param {string} searchName A string to match
+   * @param {Album} searchAlbum A string to match
    * @returns {Promise.<Album>} The Album that match the search
    */
-  searchExactAlbum(searchName) {
-    return new Promise(() => {
-      for (let [uuid, album] of this.albums) {
-        if (album.normalizedName === searchName) {
-          resolve(song);
-          return;
+  searchExactAlbum(searchAlbum) {
+    return new Promise((resolve, reject) => {
+      searchAlbum.artists.forEach((artist) => {
+        for (let [uuid, album] of artist.albums) {
+          if (album.normalizedName === searchName) {
+            // Found the album
+            resolve(album);
+            return;
+          }
         }
-      }
+      });
+      // Album doesn't exist
       reject();
     });
   }
@@ -218,15 +277,77 @@ class Library {
    * @returns {Promise.<Artist>} The Artist that match the search
    */
   searchExactArtist(searchName) {
-    return new Promise(() => {
+    return new Promise((resolve, reject) => {
       for (let [uuid, artist] of this.artists) {
+        console.log(`${artist.normalizedName} || ${searchName}`);
         if (artist.normalizedName === searchName) {
-          resolve(song);
+          // Found the artist
+          resolve(artist);
           return;
         }
       }
+      // Artist doesn't exist
       reject();
     });
+  }
+
+    /**
+   * Search all Songs for the exact name
+   * 
+   * @param {Song} searchSong A string to match
+   * @returns {(Song|undefined)} The Song that matches the search
+   */
+  searchExactSongSync(searchSong) {
+    const searchName = searchSong.normalizedName;
+    // Search for the artist
+    for (let [uuid, artist] of searchSong.artists) {
+      const song = artist.searchExactSongSync(searchName);
+      if (song) {
+        // We found a song that matches, but we need the master of the chain
+        return song.penultimateMaster;
+      }
+      // New song for the artist
+      return;
+    }
+  }
+
+  /**
+   * Search all Albums for the exact name
+   * 
+   * @param {Album} searchAlbum A string to match
+   * @returns {(Album|undefined)} The Album that match the search
+   */
+  searchExactAlbumSync(searchAlbum) {
+    const searchName = searchAlbum.normalizedName;
+    console.log(searchAlbum.artists);
+    for (let [artistUuid, artist] of searchAlbum.artists) {
+      for (let [uuid, album] of artist.albums) {
+        console.log(`${album.normalizedName} || ${searchName}`);
+        if (album.normalizedName === searchName) {
+          // Found the album
+          return album;
+        }
+      }
+    }
+    // Album doesn't exist
+    return;
+  }
+
+  /**
+   * Search all Artists for the exact name
+   * 
+   * @param {string} searchName A string to match
+   * @returns {(Artist|undefined)} The Artist that match the search
+   */
+  searchExactArtistSync(searchName) {
+    for (let [uuid, artist] of this.artists) {
+      if (artist.normalizedName === searchName) {
+        // Found the artist
+        return artist;
+      }
+    }
+    // Artist doesn't exist
+    return;
   }
 }
 

@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/Bob620/iiya#readme",
   "dependencies": {
-    "express": "^4.16.2"
+    "express": "^4.16.2",
+    "prompt-sync": "^4.1.5"
   }
 }

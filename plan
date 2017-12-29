@@ -22,6 +22,7 @@ Albums:
 Songs:
 - Unlimited songs with the same name, unique song names per artist
 - Songs with the same name and artist will be a special menu (Assumed the same song, all files kept for manual change)
+- If a song is by 2 or more artists, and one artist already has that song(name)... both artists will have the "master" song
 
 ----------
 
