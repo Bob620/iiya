@@ -16,37 +16,85 @@ class Album {
       this.addArtist(artist);
     });
   }
-
-  addSong(song) {
-    this.songs.set(song.uuid, song);
-  }
-
-  addArtist(artist) {
-    this.artists.set(artist.uuid, artist);
-  }
-
+  
   get normalizedName() {
     return this.name.toLowerCase().trim();
   }
 
-  enforce() {
-    for (let [uuid, song] in this.songs) {
+  get exportable() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      order: this.order,
+      songs: [],
+      artists: [],
+      tags: this.tags
+    }
+    for (let [songUuid, song] of this.songs) {
+      lean.songs.push(song.lean);
+    }
+    for (let [artistUuid, artist] of this.artists) {
+      lean.artists.push(artist.lean);
+    }
+    return lean;
+  }
+
+  get lean() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      order: this.order,
+      songs: [],
+      artists: [],
+      tags: this.tags
+    }
+    for (let [songUuid, song] of this.songs) {
+      lean.songs.push(songUuid);
+    }
+    for (let [artistUuid, artist] of this.artists) {
+      lean.artists.push(artistUuid);
+    }
+    return lean;
+  }
+
+  addSong(song) {
+    this.songs.set(song.uuid, song);
+    if (!song.albums.has(this.uuid)) {
       song.addAlbum(this);
     }
+  }
 
-    for (let [uuid, artist] in this.artists) {
+  addArtist(artist) {
+    this.artists.set(artist.uuid, artist);
+    if (!artist.albums.has(this.uuid)) {
       artist.addAlbum(this);
     }
   }
 
+  enforce() {
+    for (let [uuid, song] of this.songs) {
+      if (!song.albums.has(this.uuid)) {
+        song.addAlbum(this);
+      }
+    }
+
+    for (let [uuid, artist] of this.artists) {
+      if (!song.artists.has(this.uuid)) {
+        artist.addAlbum(this);
+      }
+    }
+  }
+
   merge(album) {
-    for (let [uuid, song] in album.songs) {
+    for (let [uuid, song] of album.songs) {
       this.songs.set(uuid, song);
     }
 
-    for (let [uuid, artist] in album.artist) {
+    for (let [uuid, artist] of album.artists) {
       this.artists.set(uuid, artist);
     }
+
+    this.enforce();
   }
 }
 

@@ -40,31 +40,82 @@ class Song {
     return this.name.toLowerCase().trim();
   }
 
+  get exportable() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      albums: [],
+      artists: [],
+      tags: this.tags,
+      master: this.master
+    }
+    for (let [albumUuid, album] of this.albums) {
+      lean.albums.push(album.lean);
+    }
+    for (let [artistUuid, artist] of this.artists) {
+      lean.artists.push(artist.lean);
+    }
+    return lean;
+  }
+
+  get lean() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      albums: [],
+      artists: [],
+      tags: this.tags,
+      master: this.master
+    }
+    for (let [albumUuid, album] of this.albums) {
+      lean.albums.push(albumUuid);
+    }
+    for (let [artistUuid, artist] of this.artists) {
+      lean.artists.push(artistUuid);
+    }
+    return lean;
+  }
+
   addMatch(song) {
     this.matched.set(song.uuid, song);
-    for (let artist in song.artists) {
-      if (!this.artists.has(artist.uuid)) {
+    for (let [uuid, artist] of song.artists) {
+      if (!this.artists.has(uuid)) {
         this.addArtist(artist);
       }
     }
+    this.enforce();
   }
   
   addAlbum(album) {
     this.albums.set(album.uuid, album);
+    if (album.songs.has(this.uuid)) {
+      album.addSong(this);
+    }
+    for (let [uuid, artist] of this.artists) {
+      if (!album.artists.has(uuid)) {
+        album.addArtist(artist);
+      }
+    }
   }
 
   addArtist(artist) {
     this.artists.set(artist.uuid, artist);
-    artist.addSong(this);
+    if (!artist.songs.has(this.uuid)) {
+      artist.addSong(this);
+    }
   }
   
   enforce() {
-    for (let [uuid, album] in this.albums) {
-      album.addSong(this);
+    for (let [uuid, album] of this.albums) {
+      if (!album.songs.has(this.uuid)) {
+        album.addSong(this);
+      }
     }
 
-    for (let [uuid, artist] in this.artists) {
-      artist.addSong(this);
+    for (let [uuid, artist] of this.artists) {
+      if (!artist.songs.has(this.uuid)) {
+        artist.addSong(this);
+      }
     }
   }
 }

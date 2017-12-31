@@ -18,6 +18,7 @@ Artists:
 Albums:
 - Unlimited albums with the same name, unique album names per artist
 - Albums with the same name and artist get combined
+- Albums can have more then one artist, album will be merged, keeping all artists on the album
 
 Songs:
 - Unlimited songs with the same name, unique song names per artist
@@ -31,3 +32,11 @@ Search:
 - Can search specifically for a song, album, or artist that fits the terms given
 - Can search for the specific name of a song, album, or artist and return only the exact match
   - Allows for adding in new songs/albums/artists or combining them togeather
+
+----------
+
+- Adding new artist, albums, and songs must be synchronous
+- Seraches are asynchronous, finds are synchronous
+- Artists are the main entry point into the system, they require nothing to be attached to them to function correctly
+- Albums require artists but not songs
+- Songs require artists but not albums

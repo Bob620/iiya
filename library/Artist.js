@@ -16,12 +16,52 @@ class Artist {
     return this.name.toLowerCase().trim();
   }
 
+  get exportable() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      songs: [],
+      albums: [],
+      tags: this.tags
+    }
+    for (let [songUuid, song] of this.songs) {
+      lean.songs.push(song.lean);
+    }
+    for (let [albumUuid, album] of this.albums) {
+      lean.albums.push(album.lean);
+    }
+    return lean;
+  }
+
+  get lean() {
+    let lean = {
+      uuid: this.uuid,
+      name: this.name,
+      songs: [],
+      albums: [],
+      tags: this.tags
+    }
+    for (let [songUuid, song] of this.songs) {
+      lean.songs.push(songUuid);
+    }
+    for (let [albumUuid, album] of this.albums) {
+      lean.albums.push(albumUuid);
+    }
+    return lean;
+  }
+
   addSong(song) {
     this.songs.set(song.uuid, song);
+    if (!song.artists.has(this.uuid)) {
+      song.addArtist(this);
+    }
   }
 
   addAlbum(album) {
-    this.songs.set(album.uuid, album);
+    this.albums.set(album.uuid, album);
+    if (!album.artists.has(this.uuid)) {
+      album.addArtist(this);
+    }
   }
 
   /**
@@ -49,7 +89,7 @@ class Artist {
    * @returns {(Song|undefined)} The song with the matching name
    */
   searchExactSongSync(searchName) {
-    for (let [uuid, song] in this.songs) {
+    for (let [uuid, song] of this.songs) {
       if (song.normalizedName === searchName) {
         return song;
       }
@@ -58,23 +98,28 @@ class Artist {
   }
 
   enforce() {
-    for (let [uuid, song] in this.songs) {
+    for (let [uuid, song] of this.songs) {
+      if (!song.artists.has(this.uuid))
       song.addArtist(this);
     }
 
-    for (let [uuid, album] in this.albums) {
-      album.addArtist(this);
+    for (let [uuid, album] of this.albums) {
+      if (!album.artists.has(this.uuid)) {
+        album.addArtist(this);
+      }
     }
   }
 
   merge(artist) {
-    for (let [uuid, song] in artist.songs) {
+    for (let [uuid, song] of artist.songs) {
       this.songs.set(uuid, song);
     }
 
-    for (let [uuid, album] in artist.album) {
+    for (let [uuid, album] of artist.albums) {
       this.albums.set(uuid, album);
     }
+
+    this.enforce();
   }
 }
 
