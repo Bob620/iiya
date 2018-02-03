@@ -52,9 +52,6 @@ class Library {
 
       }
     });
-    console.log(this.artists);
-    console.log(this.albums);
-    console.log(this.songs);
   }
 
   /**

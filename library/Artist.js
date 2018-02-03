@@ -7,9 +7,9 @@ class Artist {
   constructor(name) {
     this.uuid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b=>(b^crypto.rng(1)[0]%16>>b/4).toString(16));
     this.name = name;
+    this.tags = [];
     this.songs = new Map();
     this.albums = new Map();
-    this.tags = [];
   }
 
   get normalizedName() {
@@ -20,9 +20,9 @@ class Artist {
     let lean = {
       uuid: this.uuid,
       name: this.name,
+      tags: this.tags,
       songs: [],
-      albums: [],
-      tags: this.tags
+      albums: []
     }
     for (let [songUuid, song] of this.songs) {
       lean.songs.push(song.lean);
@@ -37,9 +37,9 @@ class Artist {
     let lean = {
       uuid: this.uuid,
       name: this.name,
+      tags: this.tags,
       songs: [],
-      albums: [],
-      tags: this.tags
+      albums: []
     }
     for (let [songUuid, song] of this.songs) {
       lean.songs.push(songUuid);

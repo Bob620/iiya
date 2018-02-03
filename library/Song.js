@@ -7,9 +7,9 @@ class Song {
   constructor(path, name) {
     this.uuid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b=>(b^crypto.rng(1)[0]%16>>b/4).toString(16));
     this.name = name;
+    this.tags = [];
     this.albums = new Map();
     this.artists = new Map();
-    this.tags = [];
     this.matched = new Map();
     this.masterSong = undefined;
     this.hasMaster = false;
@@ -44,10 +44,10 @@ class Song {
     let lean = {
       uuid: this.uuid,
       name: this.name,
-      albums: [],
-      artists: [],
       tags: this.tags,
-      master: this.master
+      master: this.master,
+      albums: [],
+      artists: []
     }
     for (let [albumUuid, album] of this.albums) {
       lean.albums.push(album.lean);
@@ -62,10 +62,10 @@ class Song {
     let lean = {
       uuid: this.uuid,
       name: this.name,
-      albums: [],
-      artists: [],
       tags: this.tags,
-      master: this.master
+      master: this.master,
+      albums: [],
+      artists: []
     }
     for (let [albumUuid, album] of this.albums) {
       lean.albums.push(albumUuid);

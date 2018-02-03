@@ -8,9 +8,9 @@ class Album {
     this.uuid = ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,b=>(b^crypto.rng(1)[0]%16>>b/4).toString(16));
     this.name = name;
     this.order = [];
+    this.tags = [];
     this.songs = new Map();
     this.artists = new Map();
-    this.tags = [];
 
     artists.forEach((artist) => {
       this.addArtist(artist);
@@ -26,9 +26,9 @@ class Album {
       uuid: this.uuid,
       name: this.name,
       order: this.order,
+      tags: this.tags,
       songs: [],
-      artists: [],
-      tags: this.tags
+      artists: []
     }
     for (let [songUuid, song] of this.songs) {
       lean.songs.push(song.lean);
@@ -44,9 +44,9 @@ class Album {
       uuid: this.uuid,
       name: this.name,
       order: this.order,
+      tags: this.tags,
       songs: [],
-      artists: [],
-      tags: this.tags
+      artists: []
     }
     for (let [songUuid, song] of this.songs) {
       lean.songs.push(songUuid);
