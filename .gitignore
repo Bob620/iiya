@@ -60,5 +60,8 @@ typings/
 # Custom music directory
 music/
 
-# Runtime settings
-#settings.json
+# Config
+config/config.json
+
+# .idea folder
+.idea

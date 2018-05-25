@@ -1,0 +1,44 @@
+{
+  "database": {
+    "BASE": "iiya",
+    "libraries": {
+      "BASE": "libraries",
+      "SETTINGS": "settings",
+      "NAME": "name",
+      "DIRECTORIES": "directories"
+    },
+    "directories": {
+      "BASE": "directories",
+      "LOCATION": "location",
+      "ITEMS": "items",
+      "READABLE": "readable"
+    },
+    "items": {
+      "BASE": "items",
+      "LOCATION": "location",
+      "NAME": "name",
+      "INFO": "info",
+      "READABLE": "readable"
+    }
+  },
+  "general": {
+    "NEEDSFIX": "fix",
+    "DELETED": "deleted",
+    "SUCCESS": "success"
+  },
+  "events": {
+    "USERINFO": "userinfo",
+    "ERROR": "error",
+    "DIRECTORYUPDATE": "directoryupdate",
+    "ITEMUPDATE": "itemupdate",
+    "DELETED": "deleted",
+    "DELETEDSELF": "deletedself",
+    "LIBRARYUPDATE": "libraryupdate",
+    "FIXSELF": "fixself",
+    "FIX": "fix",
+    "REMOVEDDIRECTORY": "removeddirectory",
+    "ADDEDDIRECTORY": "addeddirectory",
+    "REMOVEDITEM": "removeditem",
+    "ADDEDITEM": "addeditem"
+  }
+}
